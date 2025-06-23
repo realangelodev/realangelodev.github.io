@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angelo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         .glass-panel {
             background: rgba(0, 0, 0, 0.7);
@@ -15,9 +15,14 @@
         .name-font {
             font-family: 'Playfair Display', serif;
             letter-spacing: 0.1em;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
         }
         .description-font {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+        .title-font {
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -30,14 +35,20 @@
 
     <!-- Main Content -->
     <div class="relative h-full flex items-center justify-center">
-        <div class="glass-panel rounded-3xl p-12 max-w-md mx-auto text-center text-white">
+        <div class="glass-panel rounded-3xl p-16 max-w-2xl mx-auto text-center text-white">
             <!-- Name -->
-            <h1 class="name-font text-6xl font-black mb-6 tracking-wider">ANGELO</h1>
+            <h1 class="name-font text-6xl font-black mb-8 tracking-wider">ANGELO</h1>
             
             <!-- Description -->
-            <p class="description-font text-xl text-gray-200 leading-relaxed">
+            <p class="description-font text-xl text-gray-200 leading-relaxed mb-12">
                 like the atlantic
             </p>
+
+            <!-- Social Links Section (placeholder for your socials) -->
+            <div class="space-y-4">
+                <!-- Add your social links here -->
+                <p class="title-font text-sm text-gray-300">Connect with me</p>
+            </div>
         </div>
     </div>
 </body>
