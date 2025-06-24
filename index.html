@@ -216,8 +216,14 @@
         const bgVideo = document.getElementById('background-video');
         const dreamyOverlay = document.querySelector('.dream-overlay');
         const particlesDiv = document.getElementById('tsparticles');
-        function enterSite() {
+        overlay.addEventListener('click', function enterSite() {
           overlay.style.opacity = 0;
+
+          // Play audio IMMEDIATELY on user click
+          audio.currentTime = 31;
+          audio.volume = 0; // start at 0 for fade-in
+          audio.play();
+
           setTimeout(() => {
             overlay.style.display = 'none';
             // Show and play background video
@@ -307,11 +313,8 @@
               retina_detect: true
             });
             // Fade in audio
-            audio.currentTime = 31;
-            audio.volume = 0;
-            audio.play();
             let targetVolume = parseFloat(volumeSlider.value) || 1;
-            let fadeDuration = 5000; // 2 seconds
+            let fadeDuration = 5000; // 5 seconds
             let step = 0.02;
             let interval = setInterval(function() {
               if (audio.volume < targetVolume - step) {
@@ -323,8 +326,7 @@
             }, fadeDuration * step / targetVolume);
           }, 700);
           document.body.removeEventListener('click', enterSite);
-        }
-        overlay.addEventListener('click', enterSite);
+        });
 
         // Typewriter effect for ANGELO
         function typewriterEffect(element, text, typingSpeed = 300, erasingSpeed = 150, delay = 1800) {
