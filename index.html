@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angelo</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" crossorigin="anonymous" />
     <style>
         .glass-panel {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .name-font {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Inter', sans-serif;
             letter-spacing: 0.1em;
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
         }
@@ -24,32 +26,371 @@
         .title-font {
             font-family: 'Poppins', sans-serif;
         }
+        #suzume-audio {
+            display: none;
+        }
+        #tsparticles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Video background styling */
+        #background-video {
+            width: 100vw;
+            height: 135vh;
+            object-fit: cover;
+            position: absolute;
+            top: -17.5vh;
+            left: 0;
+        }
+        
+        /* Dreamy light overlay */
+        .dream-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(255, 182, 193, 0.25) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 192, 203, 0.25) 0%, transparent 60%),
+                        radial-gradient(circle at 40% 40%, rgba(255, 218, 224, 0.2) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .audio-slider-visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        .audio-slider-hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .glow-text {
+            text-shadow: 0 0 16px #fff, 0 0 32px #ffb6c1, 0 0 48px #fff;
+            transition: text-shadow 0.3s, transform 0.3s;
+        }
+        .glow-text:hover {
+            text-shadow: 0 0 32px #fff, 0 0 64px #ffb6c1, 0 0 96px #fff;
+            transform: scale(1.08);
+        }
+        .main-panel {
+            height: 300px;
+            min-height: 0;
+        }
+        .float-animate {
+            animation: floatUpDown 2s ease-in-out infinite alternate;
+        }
+        @keyframes floatUpDown {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
     </style>
 </head>
 <body class="h-screen overflow-hidden">
-    <!-- Background Image -->
-    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('./background.jpg');">
-        <!-- Overlay for better text readability -->
-        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+    <!-- Background Video -->
+    <video id="background-video" class="absolute inset-0 w-full h-full object-fill" muted loop playsinline poster="background.jpg">
+        <source src="./backgroundvid.mp4" type="video/mp4">
+    </video>
+    <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+
+    <!-- Dreamy Light Overlay -->
+    <div class="dream-overlay"></div>
+
+    <!-- Particles Container -->
+    <div id="tsparticles" style="display:none;"></div>
+
+    <!-- Audio Control Circle -->
+    <div id="audio-control" class="fixed top-6 left-6 z-30 flex items-center justify-center w-10 h-10 rounded-full glass-panel shadow-lg cursor-pointer transition hover:scale-105">
+        <svg id="audio-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l-2 2H5a2 2 0 00-2 2v4a2 2 0 002 2h2l2 2zm7-5a3 3 0 000-6m0 6a5 5 0 000-10" />
+        </svg>
+        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="1" class="absolute left-12 w-24 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer transition-opacity duration-200 opacity-0 pointer-events-none" />
     </div>
 
     <!-- Main Content -->
-    <div class="relative h-full flex items-center justify-center">
-        <div class="glass-panel rounded-3xl p-16 max-w-2xl mx-auto text-center text-white">
-            <!-- Name -->
-            <h1 class="name-font text-6xl font-black mb-8 tracking-wider">ANGELO</h1>
-            
-            <!-- Description -->
-            <p class="description-font text-xl text-gray-200 leading-relaxed mb-12">
-                like the atlantic
-            </p>
-
-            <!-- Social Links Section (placeholder for your socials) -->
-            <div class="space-y-4">
-                <!-- Add your social links here -->
-                <p class="title-font text-sm text-gray-300">Connect with me</p>
+    <div class="content-wrapper relative h-full flex items-center justify-center">
+        <div id="glass-card" class="glass-panel main-panel rounded-3xl p-16 w-[800px] min-h-[320px] mx-auto text-white relative flex flex-row items-center justify-between transition-transform duration-300 will-change-transform">
+            <!-- Dictionary Card Layout (Left) -->
+            <div class="text-left flex-1">
+                <div class="flex items-center space-x-3 mb-1">
+                    <h1 class="name-font text-3xl font-black tracking-wider" style="height: 40px;">
+                        ANGELO
+                    </h1>
+                    <span class="text-gray-300 text-lg font-light"> — /ˈan.dʒe.loʊ/</span>
+                </div>
+                <div class="text-gray-200 text-base italic mb-3 -mt-2">like the atlantic</div>
+                <ul class="text-gray-100 text-base space-y-2 pl-5 mb-6">
+                    <li><span class="font-semibold">1.</span><span class="italic"> im good at videos games i guess.</li>
+                    <li><span class="font-semibold">2.</span><span class="italic"> i dont know what to write here lol</span>.</li>
+                </ul>
+            </div>
+            <!-- Socials on the right -->
+            <div class="flex flex-col items-center space-y-4 ml-8">
+                <div class="relative flex items-center justify-center">
+                    <a href="https://discord.com/users/YOUR_DISCORD_ID" target="_blank" class="glass-panel flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition hover:scale-110 bg-black/15 backdrop-blur border border-white/30" onmouseover="this.style.boxShadow='0 0 24px 6px rgba(255,255,255,0.7)'" onmouseout="this.style.boxShadow=''" onclick="copyDiscordName(event)">
+                        <i class="fa-brands fa-discord text-2xl text-white"></i>
+                    </a>
+                    <div id="discord-copied-popup" class="absolute -top-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-xl bg-black/30 backdrop-blur text-xs text-white font-semibold opacity-0 pointer-events-none transition-opacity duration-300 select-none" style="z-index:10;">Copied!</div>
+                </div>
+                <div class="relative flex items-center justify-center">
+                    <a href="#" class="glass-panel flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition hover:scale-110 bg-black/15 backdrop-blur border border-white/30" onmouseover="this.style.boxShadow='0 0 24px 6px rgba(255,255,255,0.7)'" onmouseout="this.style.boxShadow=''" onclick="copyValorantName(event)">
+                        <img src="valorant.png" alt="Valorant" class="w-7 h-7 object-contain filter brightness-0 invert" />
+                    </a>
+                    <div id="valorant-copied-popup" class="absolute -top-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-xl bg-black/30 backdrop-blur text-xs text-white font-semibold opacity-0 pointer-events-none transition-opacity duration-300 select-none" style="z-index:10;">Copied!</div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Click to Enter Overlay -->
+    <div id="enter-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-95 backdrop-blur-md transition-opacity duration-700">
+        <span class="name-font text-white text-3xl font-bold tracking-wide select-none glow-text">CLICK TO ENTER</span>
+    </div>
+
+    <audio id="suzume-audio" src="./suzume.mp3" preload="auto"></audio>
+    <script>
+        // Video background control
+        const video = document.getElementById('background-video');
+        
+        // Set video to start at a specific time (in seconds)
+        // Change this value to your desired start time
+        const startTime = 15; // Starts at 10 seconds
+        
+        video.addEventListener('loadedmetadata', function() {
+            video.currentTime = startTime;
+        });
+        
+        // Fallback in case the event doesn't fire
+        video.addEventListener('canplay', function() {
+            if (video.currentTime < startTime) {
+                video.currentTime = startTime;
+            }
+        });
+
+        // Audio control logic
+        const audio = document.getElementById('suzume-audio');
+        const audioControl = document.getElementById('audio-control');
+        const volumeSlider = document.getElementById('volume-slider');
+        let sliderVisible = false;
+
+        audioControl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            sliderVisible = !sliderVisible;
+            if (sliderVisible) {
+                volumeSlider.classList.add('audio-slider-visible');
+                volumeSlider.classList.remove('audio-slider-hidden');
+            } else {
+                volumeSlider.classList.remove('audio-slider-visible');
+                volumeSlider.classList.add('audio-slider-hidden');
+            }
+        });
+
+        // Hide slider when clicking outside
+        document.addEventListener('click', function(e) {
+            if (sliderVisible && !audioControl.contains(e.target)) {
+                volumeSlider.classList.remove('audio-slider-visible');
+                volumeSlider.classList.add('audio-slider-hidden');
+                sliderVisible = false;
+            }
+        });
+
+        // Set initial state
+        volumeSlider.classList.add('audio-slider-hidden');
+
+        // Volume control
+        volumeSlider.addEventListener('input', function() {
+            audio.volume = parseFloat(this.value);
+        });
+
+        // Overlay logic
+        const overlay = document.getElementById('enter-overlay');
+        const bgVideo = document.getElementById('background-video');
+        const dreamyOverlay = document.querySelector('.dream-overlay');
+        const particlesDiv = document.getElementById('tsparticles');
+        function enterSite() {
+          overlay.style.opacity = 0;
+          setTimeout(() => {
+            overlay.style.display = 'none';
+            // Show and play background video
+            bgVideo.style.display = '';
+            bgVideo.play();
+            // Show dreamy overlay and particles
+            dreamyOverlay.style.display = '';
+            particlesDiv.style.display = '';
+            // Start cherry blossom particles
+            tsParticles.load("tsparticles", {
+              fpsLimit: 144,
+              particles: {
+                number: {
+                  value: 100,
+                  density: {
+                    enable: true,
+                    value_area: 1200
+                  }
+                },
+                color: {
+                  value: ["#ffb6c1", "#ffc0cb", "#ff69b4", "#ff1493"]
+                },
+                shape: {
+                  type: "image",
+                  image: {
+                    src: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI4IiByeT0iNCIgZmlsbD0iI2ZmYjZjMSIvPgo8L3N2Zz4K",
+                    width: 24,
+                    height: 24
+                  }
+                },
+                opacity: {
+                  value: 0.8,
+                  random: true,
+                  anim: {
+                    enable: true,
+                    speed: 1,
+                    opacity_min: 0.3,
+                    sync: false
+                  }
+                },
+                size: {
+                  value: 8,
+                  random: true,
+                  anim: {
+                    enable: true,
+                    speed: 2,
+                    size_min: 4,
+                    sync: false
+                  }
+                },
+                move: {
+                  enable: true,
+                  speed: 1,
+                  direction: "none",
+                  random: true,
+                  straight: false,
+                  out_mode: "out",
+                  bounce: false,
+                  attract: {
+                    enable: false,
+                    rotateX: 600,
+                    rotateY: 1200
+                  }
+                },
+                rotate: {
+                  value: 0,
+                  random: true,
+                  direction: "clockwise",
+                  animation: {
+                    enable: true,
+                    speed: 1
+                  }
+                }
+              },
+              interactivity: {
+                detect_on: "canvas",
+                events: {
+                  onhover: {
+                    enable: false
+                  },
+                  onclick: {
+                    enable: false
+                  },
+                  resize: true
+                }
+              },
+              retina_detect: true
+            });
+            // Fade in audio
+            audio.currentTime = 31;
+            audio.volume = 0;
+            audio.play();
+            let targetVolume = parseFloat(volumeSlider.value) || 1;
+            let fadeDuration = 5000; // 2 seconds
+            let step = 0.02;
+            let interval = setInterval(function() {
+              if (audio.volume < targetVolume - step) {
+                audio.volume = Math.min(audio.volume + step, targetVolume);
+              } else {
+                audio.volume = targetVolume;
+                clearInterval(interval);
+              }
+            }, fadeDuration * step / targetVolume);
+          }, 700);
+          document.body.removeEventListener('click', enterSite);
+        }
+        overlay.addEventListener('click', enterSite);
+
+        // Typewriter effect for ANGELO
+        function typewriterEffect(element, text, typingSpeed = 300, erasingSpeed = 150, delay = 1800) {
+            let i = 0;
+            let isErasing = false;
+            function type() {
+                if (!isErasing && i <= text.length) {
+                    element.textContent = text.substring(0, i);
+                    i++;
+                    setTimeout(type, typingSpeed);
+                } else if (isErasing && i >= 0) {
+                    element.textContent = text.substring(0, i);
+                    i--;
+                    setTimeout(type, erasingSpeed);
+                } else {
+                    isErasing = !isErasing;
+                    if (isErasing) {
+                        setTimeout(type, delay);
+                    } else {
+                        setTimeout(type, 700);
+                    }
+                }
+            }
+            type();
+        }
+        const typewriterEl = document.getElementById('typewriter');
+        typewriterEffect(typewriterEl, 'ANGELO');
+
+        // Set a fixed min-height for the main panel to prevent jumping
+        document.addEventListener('DOMContentLoaded', function() {
+            const panel = document.querySelector('.main-panel');
+            panel.style.minHeight = '220px';
+        });
+
+        function copyDiscordName(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText('mrangelo0');
+            const popup = document.getElementById('discord-copied-popup');
+            popup.style.opacity = '1';
+            setTimeout(() => { popup.style.opacity = '0'; }, 1000);
+        }
+        function copyValorantName(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText('Angelo#luv');
+            const popup = document.getElementById('valorant-copied-popup');
+            popup.style.opacity = '1';
+            setTimeout(() => { popup.style.opacity = '0'; }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const glassCard = document.getElementById('glass-card');
+            if (!glassCard) return;
+            glassCard.addEventListener('mousemove', function(e) {
+                const rect = glassCard.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * 10;
+                const rotateY = -((x - centerX) / centerX) * 10;
+                glassCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+            glassCard.addEventListener('mouseleave', function() {
+                glassCard.style.transform = '';
+            });
+        });
+    </script>
 </body>
 </html> 
